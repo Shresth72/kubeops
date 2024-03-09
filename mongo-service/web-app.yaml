@@ -46,11 +46,11 @@ kind: Service
 metadata:
   name: webapp-service
 spec:
+  type: NodePort
   selector:
     app: webapp # app.kubernetes.io/name: label
   ports:
     - protocol: TCP
       port: 8081
       targetPort: 8081
-      nodePort: 30200
-
+      nodePort: 30007
