@@ -79,3 +79,11 @@
 ```
 
 - Save the ARN path for github actions
+
+## Setup Github Secrets
+
+- `AWS_BUCKET_NAME`
+- `AWS_BUCKET_KEY_NAME`
+- `AWS_REGION`
+- `AWS_ROLE_ARN`
+
