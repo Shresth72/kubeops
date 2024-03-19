@@ -54,6 +54,9 @@ jobs:
         kubectl version --client
         echo ${{ secrets.KUBECONFIG }} | base64 --decode > kubeconfig.yaml
 
+    - name: Update kubectl configuration
+      run: aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+
     - name: Deploy to EKS
       env:
         IMAGE_URI: ${{ steps.build-image.outputs.image }}
