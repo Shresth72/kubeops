@@ -39,4 +39,4 @@ Internet Gateway is a VPC component that allows communication between instances 
 
 A VPC endpoint enables you to privately connect your VPC to supported AWS services without using public IP Address
 
-![alt text](image.png)
+![alt text](vpc.png)
