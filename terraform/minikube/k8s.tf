@@ -1,18 +1,18 @@
 # namespace
 resource "kubernetes_namespace" "k8s_cluster" {
   metadata {
-    name = "k8s_ns_by_tf"
+    name = "k8s-ns-by-tf"
   }
 }
 
 # deployment
 resource "kubernetes_deployment" "k8s_deployment" {
   metadata {
-    name = "terraform_example"
+    name = "terraform-example"
     labels = {
       test = "MyApp"
     }
-    namespace = "k8s_ns_by_tf"
+    namespace = "k8s-ns-by-tf"
   }
 
   spec {
