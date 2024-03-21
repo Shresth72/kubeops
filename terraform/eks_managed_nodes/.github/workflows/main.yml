@@ -1,0 +1,65 @@
+name: "Code Quality: Terraform"
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  terrform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Key Auth i salreay setup in terraform modules for creation of cluster
+      # This configuration is needed for kubectl to access the cluster
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: terraform plan -no-color
+
+      - name: Terraform Apply
+        id: apply
+        run: terraform apply -auto-approve
+
+      # In this repo, the k8f files are deployed using helm charts
+      # But this is just an example if you want to deploy using kubectl
+      - name: Install and configure kubectl
+        run: |
+          curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.21.2/2021-07-05/bin/linux/amd64/kubectl
+          chmod +x ./kubectl
+          mkdir -p $GITHUB_WORKSPACE/bin
+          mv ./kubectl $GITHUB_WORKSPACE/bin/kubectl
+          echo >> $GITHUB_ENV "PATH=$GITHUB_WORKSPACE/bin:$PATH"
+          echo >> $GITHUB_ENV "KUBECONFIG=$GITHUB_WORKSPACE/.kube/config"
+
+      - name: Create kubeconfig
+        run: aws eks --region us-west-2 update-kubeconfig --name eks_managed_nodes
+
+      - name: Deploy to EKS
+        run: |
+          echo "${{ secrets.SECRET_YAML }}" > secret.yaml
+          kubectl apply -f secret.yaml
+          kubectl apply -f k8s/
+          rm -f secret.yaml
