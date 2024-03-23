@@ -48,3 +48,5 @@ resource "kubernetes_deployment" "k8s_deployment" {
     }
   }
 }
+
+# kubectl get ns
