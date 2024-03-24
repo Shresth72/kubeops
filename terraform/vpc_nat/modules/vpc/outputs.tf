@@ -1,3 +1,5 @@
+# Required for NAT Gateway and Security Group Modules
+
 output "region" {
   value = var.region
 }
