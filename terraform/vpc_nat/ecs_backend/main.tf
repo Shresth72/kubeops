@@ -3,6 +3,13 @@ provider "aws" {
   profile = "default"
 }
 
+# Store state on S3 with SSE enabled
+module "tf-state" {
+  source      = "../modules/tf-state"
+  bucket_name = local.bucket_name
+  table_name  = local.table_name
+}
+
 module "vpc" {
   source                       = "../modules/vpc"
   region                       = var.region
