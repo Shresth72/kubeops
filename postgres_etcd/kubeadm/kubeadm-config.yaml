@@ -1,0 +1,20 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 192.168.56.2
+  bindPort: 6443
+nodeRegistration:
+  criSocket: "unix:///var/run/crio/crio.sock"
+
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: v1.25.0
+networking:
+  podSubnet: 10.244.0.0/16
+etcd:
+  external:
+    endpoints:
+      - http://127.0.0.1:2379 # Kine will listen here
+apiServer:
+  timeoutForControlPlane: 1m0s

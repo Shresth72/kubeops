@@ -1,0 +1,35 @@
+# edit the existing
+# /etc/kubernetes/manifests/kube-apiserver.yaml
+
+containers:
+  name: kube-apiserver
+
+  image: rancher/kine:v0.10.1-amd64
+  nane: kine
+  securityContext: # not to be used in production
+    runAsUser: 0
+    runAsGroup: 0
+  command: ["/bin/sh", "-c", "--"]
+  args: [
+      'kine --endpoint="postgres://$(POSTGRES_USERNAME):$(POSTGRES_PASSWORD)@localhost:(PORT)/postgres"
+      --ca-file=/var/lib/postgresql/ca.crt
+      --cert-file=/var/lib/postgresql/server.crt
+      --key-file=/var/lib/postgresql/server.key'
+    ]
+  env: # use opaque secrets.yml in production
+    - name: POSTGRES_USERNAME
+      value: "postgres"
+    - name: POSTGRES_PASSWORD
+      value: "secret_password"
+    - name: PORT
+      value: "5432"
+  volumeMounts:
+    - mountPath: /var/lib/postgresql/
+      name: kine-ssl
+      readOnly: true
+
+volumes:
+  - hostPath:
+      path: /etc/kubernetes/pki/etcd
+      type: DirectoryOrCreate
+    name: kine-ssl
