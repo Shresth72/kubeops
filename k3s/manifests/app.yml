@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: basic-kubernetes
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: basic-kubernetes
+  template:
+    metadata:
+      labels:
+        app: basic-kubernetes
+    spec:
+      containers:
+        - image: cloudversityofficial/basic-kubernetes
+          imagePullPolicy: "Always"
+          name: basic-kubernetes
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "0.5"
+              memory: "512Mi"
+            requests:
+              cpu: "0.1"
+              memory: "256Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: basic-kubernetes
+  name: basic-kubernetes
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+  selector:
+    app: basic-kubernetes
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-kubernetes
+spec:
+  # ingressClassName is necessary since v1.22
+  ingressClassName: nginx
+  rules:
+    - host: <YOUR_IP>.nip.io
+      http:
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: basic-kubernetes
+                port:
+                  number: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: basic-kubernetes-dns
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+spec:
+  # ingressClassName is necessary since v1.22
+  ingressClassName: nginx
+  rules:
+    - host: <YOUR_IP>.nip.io
+      http:
+        paths: # for dns entry
+          - path: /cloud-versity(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: basic-kubernetes
+                port:
+                  number: 80
