@@ -13,7 +13,7 @@ spec:
       # Change the secret name to ssl-cert-production
       # for a valid, green certificate in your browser
   rules:
-    - host: <YOUR_IP>.nip.io 
+    - host: <YOUR_IP>.nip.io
       # or have a valid dns record map to the ip address
       # host can be mapped locally from /etc/hosts file 
       http:
@@ -25,3 +25,9 @@ spec:
                 name: rancher-demo
                 port:
                   number: 80
+          - path: /analytics
+            backend:
+              service:
+                 name: rancher-demo
+                 port: 
+                    number: 81
