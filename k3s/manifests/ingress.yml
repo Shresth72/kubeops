@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: rancher-demo
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # if certificate is issued
+  tls:
+    - hosts:
+        - <YOUR_IP>.nip.io
+      secretName: ssl-cert-staging
+      # Change the secret name to ssl-cert-production
+      # for a valid, green certificate in your browser
+  rules:
+    - host: <YOUR_IP>.nip.io 
+      # or have a valid dns record map to the ip address
+      # host can be mapped locally from /etc/hosts file 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: rancher-demo
+                port:
+                  number: 80

@@ -17,4 +17,13 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 system restart k3s
 
 # Apply the app deployment
-kubectl apply -f manifests/app.yaml
+kubectl apply -f manifests/deployment.yml
+kubectl apply -f manifests/service.yml
+kubectl apply -f manifests/ingress.yml
+
+#
+# Implementing HTTPS Certificates
+
+# Install cert-manager
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.5.3/cert-manager.yaml
+
