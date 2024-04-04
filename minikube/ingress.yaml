@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: minikube-ingress
+  namespace: kube-system-namespace
+spec:
+  tls:
+    - hosts:
+        - myminikubeapp.com
+      secretName: secret-tls
+
+  rules:
+    - host: myminikubeapp.com
+      http:
+        paths:
+          - path: /dashboard
+            backend:
+              serviceName: dashboard-service
+              servicePort: 8080
+          - path: /api
+            backend:
+              serviceName: api-service
+              servicePort: 8081

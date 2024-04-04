@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-name
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  volumes:
+    - name: my-pd
+      persistentVolumeClaim:
+        claimName: pvc-name
+
+  # NFS
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: slow
+  mountOptions:
+    - hard
+    - nfsvers=4.1
+  nfs:
+    path: /dir/path/on/nfs/server
+    server: nfs-server-ip-address
+
+  # GCE Persistent Disk
+  gcePersistentDisk:
+    pdName: my-data-disk
+    fsType: ext4
+
+  # Local storage
+  # persistentVolumeReclaimPolicy: Delete
+  # storageClassName: local-storage
+  local:
+    path: /mnt/disks/ssd1
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - my-node
