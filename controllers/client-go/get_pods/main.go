@@ -52,6 +52,10 @@ func main() {
 
 	// Deployments are in appv1 api
 	deployments, err := clientset.AppsV1().Deployments("default").List(ctx, metav1.ListOptions{})
+	if err != nil {
+		fmt.Printf("error fetching deployments: %v\n", err)
+		return
+	}
 
 	fmt.Println("\nDeployments from default namespace")
 	for _, d := range deployments.Items {
