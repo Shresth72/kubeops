@@ -2,3 +2,5 @@
 .terraform.lock.hcl
 terraform.tfstate
 *vim*
+
+/controllers/cmd/get_pods/get_pods
