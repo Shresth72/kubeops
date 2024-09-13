@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -11,7 +12,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Get all pods from a kubernetes cluster
+// Get all pods. deployments from a kubernetes cluster
 func main() {
 	cluster := flag.String("cluster", "k3s", "Choose the cluster type: k3s or k8s")
 	kubeconfig := flag.String("kubeconfig", "", "Location of the kubeconfig file")
@@ -25,6 +26,7 @@ func main() {
 		}
 	}
 
+	ctx := context.Background()
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		fmt.Printf("error building config from flags: %v\n", err)
@@ -37,15 +39,28 @@ func main() {
 		}
 	}
 
+	// Set custom timeout for api server to respond
+	config.Timeout = 120 * time.Second
+
+	// Pods are in CoreV1 api
+	// Pod implements runtime.Object (Kubernetes object)
+	// 1. TypeMeta: impl SetGroupVersionKind, GroupVersionKind
+	//    - apiVersion: apps/v1
+	//    - kind: Deployment
+	//  - impl DeepCopyObject
+	//
+	// 2. ObjectMeta
+	// 3. Spec
+	// 4. Status
+
+	// ClientSet contains the clients for groups. Each group has exactly one version included in a ClientSet
+
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		fmt.Printf("error building clientset: %v\n", err)
 		return
 	}
 
-	ctx := context.Background()
-
-	// Pods are in corev1 api
 	pods, err := clientset.CoreV1().Pods("default").List(ctx, metav1.ListOptions{})
 	if err != nil {
 		fmt.Printf("error fetching pods: %v\n", err)
