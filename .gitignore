@@ -3,4 +3,4 @@
 terraform.tfstate
 *vim*
 
-controllers/client-go/get_resources/get_resources
+controllers/examples/get_resources/get_resources
