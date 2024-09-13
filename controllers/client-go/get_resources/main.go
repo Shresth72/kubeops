@@ -7,6 +7,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
@@ -26,8 +27,14 @@ func main() {
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
-		fmt.Printf("error building config: %v\n", err)
-		return
+		fmt.Printf("error building config from flags: %v\n", err)
+
+		// If kubeconfig is not found, try to use in-cluster config
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			fmt.Printf("error fetching in-cluster config: %v\n", err)
+			return
+		}
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
