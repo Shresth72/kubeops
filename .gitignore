@@ -3,4 +3,4 @@
 terraform.tfstate
 *vim*
 
-/controllers/cmd/get_pods/get_pods
+controllers/client-go/cmd/get_pods/get_pods
