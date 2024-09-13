@@ -16,16 +16,22 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// Pods are in CoreV1 api, Deployments are in AppsV1 api
-// Pods, Deployments, etc implement runtime.Object (Kubernetes object)
-// 1. TypeMeta: impl SetGroupVersionKind, GroupVersionKind
-//    - apiVersion: apps/v1
-//    - kind: Deployment
-//  - impl DeepCopyObject
-//
-// 2. ObjectMeta
-// 3. Spec
-// 4. Status
+/*
+ Pods are in CoreV1 api, Deployments are in AppsV1 api
+ Pods, Deployments, etc implement runtime.Object (Kubernetes object)
+
+ 1. TypeMeta: impl SetGroupVersionKind, GroupVersionKind
+    - apiVersion: apps/v1 (resource)
+    - kind: Deployment | Pod | Service
+        - RestMapper: Pass GroupVersionResource to get the GroupVersionKind
+        - ObjectKinds: Pass k8s object to get the GroupVersionKind (if the object is already registered through AddKnownTypes)
+
+ 2. ObjectMeta
+ 3. Spec
+ 4. Status
+
+ - impl DeepCopyObject
+*/
 
 func main() {
 	cluster := flag.String("cluster", "k3s", "Choose the cluster type: k3s or k8s")
