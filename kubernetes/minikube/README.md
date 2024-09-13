@@ -57,6 +57,7 @@ Or create a secret from a file
 - Used for Database, File Storage read/write, etc.
 
 - Persistent Volume
+
   - Storage Class
   - Persistent Volume Claim
   - Volume Mount
@@ -83,3 +84,30 @@ Or create a secret from a file
 - PVC claims the storage from the Persistent Volume
 - Additional Characteristics like ReadWriteOnce, ReadOnlyMany, ReadWriteMany
 - Whatever Persistent Volume satisfies the claim, it will be mounted to the Pod
+
+### Levels of Volume abstractions
+
+- Pod Requests the Volume through the PV Claim
+- Claim tries to find a volume that satisfies the claim in the cluster
+- Volume has the actual storage backend
+- Claims must be in the same namespace as the Pod that uses it
+
+```bash
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mypod
+spec:
+  containers:
+    - name: mypod
+      image: nginx
+      volumeMounts:
+        - mountPath: /var/www/html
+          name: myvolume
+  volumes:
+    - name: mypd
+      persistentVolumeClaim:
+        claimName: myclaim
+```
+
+![alt text](pvc.png)
