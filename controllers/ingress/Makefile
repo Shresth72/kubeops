@@ -4,8 +4,11 @@
 run:
 	go build && sudo ./ingress
 
-watch-k3s:
+watch-services:
 	sudo watch k3s kubectl get service -n default
+
+get-services:
+	sudo k3s kubectl get service -n default
 
 get-deploy:
 	sudo k3s kubectl get deployments -n default

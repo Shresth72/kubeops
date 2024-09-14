@@ -7,6 +7,8 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsinformers "k8s.io/client-go/informers/apps/v1"
 	appslisters "k8s.io/client-go/listers/apps/v1"
@@ -84,9 +86,14 @@ func (c *Controller) processItems() bool {
 
 	err = c.syncDeployment(ns, name)
 	if err != nil {
-		// retry
+		// Deployment not_found, then don't retry
+		if apierrors.IsNotFound(err) {
+			return false
+		}
+
+		// retry if failed
 		c.queue.AddRateLimited(key)
-		fmt.Printf("failed syncing deployment: %v; trying again\n", err)
+		fmt.Printf("error syncing deployment: %v; trying again\n", err)
 		return true
 	}
 
@@ -98,7 +105,11 @@ func (c *Controller) syncDeployment(ns, name string) error {
 
 	dep, err := c.depLister.Deployments(ns).Get(name)
 	if err != nil {
-		return fmt.Errorf("fetching deployment from informer: %v\n", err)
+		if apierrors.IsNotFound(err) {
+			return err
+		}
+
+		return fmt.Errorf("error fetching deployment from informer: %v\n", err)
 	}
 
 	// create service
@@ -118,17 +129,72 @@ func (c *Controller) syncDeployment(ns, name string) error {
 		},
 	}
 
-	_, err = c.clientSet.CoreV1().Services(ns).Create(ctx, &svc, metav1.CreateOptions{})
+	service, err := c.clientSet.CoreV1().Services(ns).Create(ctx, &svc, metav1.CreateOptions{})
 	if err != nil {
-		return fmt.Errorf("creating service: %v\n", err)
+		return fmt.Errorf("error creating service: %v\n", err)
 	}
 
-	// create ingress
+	// create ingress resource (/path)
+	return createIngress(ctx, c.clientSet, service)
+}
 
-	return nil
+func createIngress(ctx context.Context, client kubernetes.Interface, svc *corev1.Service) error {
+	pathType := "Prefix"
+
+	ingress := netv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      svc.Name,
+			Namespace: svc.Namespace,
+			Annotations: map[string]string{
+				"nginx.ingress.kubernetes.io/rewrite-target": "/",
+			},
+		},
+		Spec: netv1.IngressSpec{
+			Rules: []netv1.IngressRule{
+				{
+					IngressRuleValue: netv1.IngressRuleValue{
+						HTTP: &netv1.HTTPIngressRuleValue{
+							Paths: []netv1.HTTPIngressPath{
+								{
+									Path:     fmt.Sprintf("%s", svc.Name),
+									PathType: (*netv1.PathType)(&pathType),
+									Backend: netv1.IngressBackend{
+										Service: &netv1.IngressServiceBackend{
+											Name: svc.Name,
+											Port: netv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	_, err := client.NetworkingV1().
+		Ingresses(svc.Namespace).
+		Create(ctx, &ingress, metav1.CreateOptions{})
+
+	return err
 }
 
 func (c *Controller) handleAdd(obj interface{}) {
+	dep, ok := obj.(*appsv1.Deployment)
+	if !ok {
+		fmt.Println("unexpected object type")
+	}
+
+	ctx := context.Background()
+	_, err := c.clientSet.CoreV1().Services(dep.Namespace).Get(ctx, dep.Name, metav1.GetOptions{})
+	if err == nil {
+		// fmt.Printf("Deployment '%s' already exists\n", dep.Name)
+		return
+	}
+
 	fmt.Println("\nDeployment Add called")
 	c.queue.Add(obj)
 }
