@@ -84,17 +84,20 @@ func (c *Controller) processItems() bool {
 		return false
 	}
 
+	// check if the object has been deleted from k8s cluster
+	ctx := context.Background()
+	_, err = c.clientSet.AppsV1().Deployments(ns).Get(ctx, name, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		fmt.Printf("Deployment '%s' was deleted\n", name)
+		return true
+	}
+
 	err = c.syncDeployment(ns, name)
 	if err != nil {
-		// Deployment not_found, then don't retry
-		if apierrors.IsNotFound(err) {
-			return false
-		}
-
-		// Retry for other errors
+		// retry
 		c.queue.AddRateLimited(key)
 		fmt.Printf("error syncing deployment: %v; trying again\n", err)
-		return true
+		return false
 	}
 
 	return true
@@ -105,10 +108,6 @@ func (c *Controller) syncDeployment(ns, name string) error {
 
 	dep, err := c.depLister.Deployments(ns).Get(name)
 	if err != nil {
-		if apierrors.IsNotFound(err) {
-			return err
-		}
-
 		return fmt.Errorf("error fetching deployment from informer: %v\n", err)
 	}
 
