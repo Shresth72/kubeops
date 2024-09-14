@@ -4,4 +4,4 @@ terraform.tfstate
 *vim*
 
 controllers/examples/get_resources/get_resources
-controllers/ingress/ingress
+controllers/service_controller/service_controller

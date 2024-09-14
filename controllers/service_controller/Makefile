@@ -24,3 +24,6 @@ delete-service:
 
 nginx-pf:
 	sudo k3s kubectl port-forward -n default svc/nginx 8080:80
+
+nginx-controller:
+	sudo kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.11.2/deploy/static/provider/do/deploy.yaml

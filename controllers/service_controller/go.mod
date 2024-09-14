@@ -1,4 +1,4 @@
-module github.com/Shresth72/ingress
+module github.com/Shresth72/service_controller
 
 go 1.22.5
 

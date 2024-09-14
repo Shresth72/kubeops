@@ -91,7 +91,7 @@ func (c *Controller) processItems() bool {
 			return false
 		}
 
-		// retry if failed
+		// Retry for other errors
 		c.queue.AddRateLimited(key)
 		fmt.Printf("error syncing deployment: %v; trying again\n", err)
 		return true
