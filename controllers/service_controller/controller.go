@@ -89,6 +89,21 @@ func (c *Controller) processItems() bool {
 	_, err = c.clientSet.AppsV1().Deployments(ns).Get(ctx, name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		fmt.Printf("Deployment '%s' was deleted\n", name)
+
+		// delete service
+		err := c.clientSet.CoreV1().Secrets(ns).Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil {
+			fmt.Printf("failed to delete '%s' service\n", name)
+			return false
+		}
+
+		// delete ingress
+		err = c.clientSet.NetworkingV1().Ingresses(ns).Delete(ctx, name, metav1.DeleteOptions{})
+		if err != nil {
+			fmt.Printf("failed to delete '%s' ingress resource\n", name)
+			return false
+		}
+
 		return true
 	}
 
@@ -190,11 +205,11 @@ func (c *Controller) handleAdd(obj interface{}) {
 	ctx := context.Background()
 	_, err := c.clientSet.CoreV1().Services(dep.Namespace).Get(ctx, dep.Name, metav1.GetOptions{})
 	if err == nil {
-		// fmt.Printf("Deployment '%s' already exists\n", dep.Name)
+		fmt.Printf("Deployment '%s' already exists\n", dep.Name)
 		return
 	}
 
-	fmt.Println("\nDeployment Add called")
+	fmt.Printf("\nDeployment Add called for '%s'", dep.Name)
 	c.queue.Add(obj)
 }
 
