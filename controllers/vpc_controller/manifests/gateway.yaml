@@ -1,0 +1,29 @@
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: InternetGateway
+metadata:
+  name: igw
+spec:
+  vpcRef:
+    from:
+      name: vpc
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: NATGateway
+metadata:
+  name: natgateway1
+spec:
+  subnetRef:
+    from:
+      name: public-subnet1
+  allocationRef:
+    from:
+      name: eip1
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: ElasticIPAddress
+metadata:
+  name: eip1
+spec:
+  tags:
+    - key: name
+      value: eip-ctrl

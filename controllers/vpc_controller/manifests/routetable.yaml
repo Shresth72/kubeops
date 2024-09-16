@@ -1,0 +1,27 @@
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: RouteTable
+metadata:
+  name: public-route-table
+spec:
+  vpcRef:
+    from:
+      name: vpc
+  routes:
+    - destinationCIDRBlock: 0.0.0.0/0
+      gatewayRef:
+        from:
+          name: igw
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: RouteTable
+metadata:
+  name: private-route-table-az1
+spec:
+  vpcRef:
+    from:
+      name: vpc
+  routes:
+    - destinationCIDRBlock: 0.0.0.0/0
+      natGatewayRef:
+        from:
+          name: natgateway1

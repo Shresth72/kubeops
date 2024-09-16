@@ -1,0 +1,28 @@
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: public-subnet1
+spec:
+  availabilityZone: us-west-2a
+  cidrBlock: 10.0.0.0/20
+  mapPublicIPOnLaunch: true
+  vpcRef:
+    from:
+      name: vpc
+  routeTableRefs:
+    - from:
+        name: public-route-table
+---
+apiVersion: ec2.services.k8s.aws/v1alpha1
+kind: Subnet
+metadata:
+  name: private-subnet1
+spec:
+  availabilityZone: us-west-2a
+  cidrBlock: 10.0.128.0/20
+  vpcRef:
+    from:
+      name: vpc
+  routeTableRefs:
+    - from:
+        name: private-route-table-az1

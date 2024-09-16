@@ -14,3 +14,7 @@ helm install --create-namespace -n ack-system oci://public.ecr.aws/aws-controlle
 
 
 # Create VPC and VPC components
+kubectl apply -f vpc.yaml
+kubectl apply -f subnets.yaml
+kubectl apply -f gateway.yaml
+kubectl apply -f routetable.yaml
