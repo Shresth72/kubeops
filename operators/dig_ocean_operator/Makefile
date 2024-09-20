@@ -9,7 +9,7 @@ HEADER_FILE := /home/shrestha/go_lang/kubectl/operators/digital_ocean_operator/h
 CRD_MANIFEST := manifests/${GROUP_NAME}.dev_${MODULE_NAME}s.yaml
 
 # Default target
-all: generate-code generate-crd create-crd
+generate-all: generate-code generate-crd
 
 # Generate client and API code
 generate-code:
@@ -36,5 +36,16 @@ delete-crd:
 list-crds:
 	sudo k3s kubectl get crds
 
-.PHONY: all generate-code generate-crd create-crd delete-crd list-crds
+create-kluster:
+	sudo k3s kubectl create -f manifests/klusterone.yaml
+
+delete-kluster:
+	sudo k3s kubectl delete -f manifests/klusterone.yaml
+
+list-klusters:
+	sudo k3s kubectl get kluster
+
+clean: delete-crd delete-kluster
+
+.PHONY: all generate-code generate-crd create-crd delete-crd list-crds create-kluster delete-kluster
 

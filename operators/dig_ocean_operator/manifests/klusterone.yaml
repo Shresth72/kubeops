@@ -1,8 +1,9 @@
+# Cluster CR
 apiVersion: shresth72.dev/v1alpha1
 kind: Kluster
 metadata:
-  name: kluster-0
+  name: kluster-1
 spec:
-  name: kluster-0
+  name: kluster-1
   region: "ap-south-1"
-  version: "1234"
+  version: "1.0"

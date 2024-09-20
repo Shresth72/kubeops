@@ -50,5 +50,9 @@ func main() {
 		log.Printf("listing klusters %s\n", err.Error())
 	}
 
-	fmt.Printf("length of klusters is: %d\n", len(klusters.Items))
+	fmt.Printf(
+		"length of klusters is %d and name is %s\n",
+		len(klusters.Items),
+		klusters.Items[0].Name,
+	)
 }
