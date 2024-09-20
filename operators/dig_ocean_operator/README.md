@@ -1,8 +1,6 @@
-
-
 Kluster
 
-viveksingh.dev
+shresth72.dev
 v1alpha1
 
 generate
