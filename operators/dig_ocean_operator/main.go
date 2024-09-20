@@ -1,16 +1,18 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/shresth72/kluster/controller"
+
 	klient "github.com/shresth72/kluster/pkg/client/clientset/versioned"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kinformerFactory "github.com/shresth72/kluster/pkg/client/informers/externalversions"
 )
 
 func main() {
@@ -43,16 +45,14 @@ func main() {
 		log.Printf("getting klient set %s\n", err.Error())
 	}
 
-	klusters, err := klientset.Shresth72V1alpha1().
-		Klusters("").
-		List(context.Background(), metav1.ListOptions{})
-	if err != nil {
-		log.Printf("listing klusters %s\n", err.Error())
-	}
+	stopCh := make(chan struct{})
+	infoFactory := kinformerFactory.NewSharedInformerFactory(klientset, 20*time.Minute)
 
-	fmt.Printf(
-		"length of klusters is %d and name is %s\n",
-		len(klusters.Items),
-		klusters.Items[0].Name,
-	)
+	c := controller.NewController(klientset, infoFactory.Shresth72().V1alpha1().Klusters())
+
+	infoFactory.Start(stopCh)
+
+	if err := c.Run(stopCh); err != nil {
+		log.Printf("error running contoller: %v\n", err)
+	}
 }
