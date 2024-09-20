@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"context"
 	"log"
 	"time"
 
@@ -11,9 +12,11 @@ import (
 
 	"github.com/shresth72/kluster/pkg/do"
 
+	v1alpha1 "github.com/shresth72/kluster/pkg/apis/shresth72.dev/v1alpha1"
 	klientset "github.com/shresth72/kluster/pkg/client/clientset/versioned"
 	kinformer "github.com/shresth72/kluster/pkg/client/informers/externalversions/shresth72.dev/v1alpha1"
 	klister "github.com/shresth72/kluster/pkg/client/listers/shresth72.dev/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Controller struct {
@@ -108,7 +111,22 @@ func (c *Controller) processNextItem() bool {
 
 	log.Printf("The Digital Ocean ClusterId that we have is: %s\n", clusterId)
 
+	if err = c.updateStatus(clusterId, "creating", kluster); err != nil {
+		log.Printf("error updating '%s' cluster status: %v", kluster.Name, err)
+		return false
+	}
+
 	return true
+}
+
+func (c *Controller) updateStatus(id, progress string, kluster *v1alpha1.Kluster) error {
+	kluster.Status.KlusterId = id
+	kluster.Status.Progress = progress
+
+	_, err := c.klient.Shresth72V1alpha1().
+		Klusters(kluster.Namespace).
+		UpdateStatus(context.Background(), kluster, metav1.UpdateOptions{})
+	return err
 }
 
 func (c *Controller) handleAdd(obj interface{}) {

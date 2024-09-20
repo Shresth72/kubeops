@@ -51,6 +51,17 @@ spec:
                         type: string
                       version:
                         type: string
+                      tokenSecret:
+                        type: string
+                    type: object
+                  status:
+                    properties:
+                      klusterID:
+                        type: string
+                      kubeConfig:
+                        type: string
+                      progress:
+                        type: string
                     type: object
                 type: object
               type: array
@@ -62,6 +73,8 @@ spec:
           type: object
       served: true
       storage: true
+      subresources:
+        status: {}
 status:
   acceptedNames:
     kind: ""

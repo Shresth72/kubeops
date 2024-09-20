@@ -48,6 +48,11 @@ type KlusterInterface interface {
 		kluster *v1alpha1.Kluster,
 		opts v1.UpdateOptions,
 	) (*v1alpha1.Kluster, error)
+	UpdateStatus(
+		ctx context.Context,
+		kluster *v1alpha1.Kluster,
+		opts v1.UpdateOptions,
+	) (*v1alpha1.Kluster, error)
 	Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
 	DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
 	Get(ctx context.Context, name string, opts v1.GetOptions) (*v1alpha1.Kluster, error)
@@ -158,6 +163,26 @@ func (c *klusters) Update(
 		Namespace(c.ns).
 		Resource("klusters").
 		Name(kluster.Name).
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Body(kluster).
+		Do(ctx).
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *klusters) UpdateStatus(
+	ctx context.Context,
+	kluster *v1alpha1.Kluster,
+	opts v1.UpdateOptions,
+) (result *v1alpha1.Kluster, err error) {
+	result = &v1alpha1.Kluster{}
+	err = c.client.Put().
+		Namespace(c.ns).
+		Resource("klusters").
+		Name(kluster.Name).
+		SubResource("status").
 		VersionedParams(&opts, scheme.ParameterCodec).
 		Body(kluster).
 		Do(ctx).
