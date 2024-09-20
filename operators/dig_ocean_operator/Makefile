@@ -1,7 +1,9 @@
 MODULE_NAME := kluster
 GROUP_NAME := shresth72
 API_VERSION := v1alpha1
+SECRET_NAME := dosecret
 GITHUB_PKG := github.com/${GROUP_NAME}
+DO_TOKEN := ""
 
 # Paths
 CODEGEN_PKG := /home/shrestha/go/pkg/mod/k8s.io/code-generator@v0.29.2/generate-groups.sh
@@ -22,6 +24,9 @@ generate-crd:
 		crd:crdVersion=v1 \
 		out:crd:artifacts:config=manifests
 
+
+
+
 # CRD 
 create-crd:
 	sudo k3s kubectl create -f ${CRD_MANIFEST}
@@ -32,6 +37,19 @@ delete-crd:
 list-crds:
 	sudo k3s kubectl get crds
 
+
+
+
+# Secrets
+create-secret:
+	sudo k3s kubectl create secret ${SECRET_NAME} --from-literal token=${DO_TOKEN}
+
+list-secret:
+	sudo k3s kubectl get secrets ${SECRET_NAME} -oyaml
+
+
+
+
 # Kluster
 create-kluster:
 	sudo k3s kubectl create -f manifests/klusterone.yaml
@@ -41,6 +59,9 @@ delete-kluster:
 
 list-klusters:
 	sudo k3s kubectl get kluster
+
+
+
 
 clean: delete-crd delete-kluster
 

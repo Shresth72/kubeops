@@ -6,10 +6,11 @@ import (
 	"log"
 	"time"
 
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/shresth72/kluster/controller"
+	"github.com/shresth72/kluster/pkg/controller"
 
 	klient "github.com/shresth72/kluster/pkg/client/clientset/versioned"
 	kinformerFactory "github.com/shresth72/kluster/pkg/client/informers/externalversions"
@@ -45,10 +46,16 @@ func main() {
 		log.Printf("getting klient set %s\n", err.Error())
 	}
 
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		fmt.Printf("error creating new config: %v", err)
+		return
+	}
+
 	stopCh := make(chan struct{})
 	infoFactory := kinformerFactory.NewSharedInformerFactory(klientset, 20*time.Minute)
 
-	c := controller.NewController(klientset, infoFactory.Shresth72().V1alpha1().Klusters())
+	c := controller.NewController(client, klientset, infoFactory.Shresth72().V1alpha1().Klusters())
 
 	infoFactory.Start(stopCh)
 

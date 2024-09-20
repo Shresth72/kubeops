@@ -9,3 +9,13 @@ generate
 2. clientset
 3. informers
 4. lister
+
+#### In Production
+
+interface {
+CreateCluster
+DeleteCluster
+GetKubeConfig
+}
+
+DigitalOcean, AKS implement these interfaces

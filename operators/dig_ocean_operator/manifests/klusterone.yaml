@@ -5,6 +5,10 @@ metadata:
   name: kluster-1
 spec:
   name: kluster-1
-  region: "ap-south-1"
-  version: "1.0"
-  tokenSecret: "dosecret"
+  region: "nyc1"
+  version: "1.21.2-do.2"
+  tokenSecret: "default/dosecret"
+  nodePools:
+    - count: 3
+      name: "nodepool-1"
+      size: "s-2vcpu-2gb"
