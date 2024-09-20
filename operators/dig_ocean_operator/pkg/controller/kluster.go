@@ -99,6 +99,7 @@ func (c *Controller) processNextItem() bool {
 	log.Printf("current kluster spec: %+v\n", kluster.Spec)
 
 	// Create and manage the kluster of Digital Ocean
+	// Persisting ClusterID for easy deletion
 	clusterId, err := do.Create(c.client, kluster.Spec)
 	if err != nil {
 		log.Printf("error creating cluster on digital ocean: %v", err)
