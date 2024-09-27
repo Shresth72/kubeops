@@ -44,6 +44,22 @@ func Create(client kubernetes.Interface, spec v1alpha1.KlusterSpec) (string, err
 	return cluster.ID, nil
 }
 
+func Delete(client kubernetes.Interface, spec v1alpha1.KlusterSpec) error {
+	token, err := getToken(client, spec.TokenSecret)
+	if err != nil {
+		return err
+	}
+
+	tokenClient := godo.NewFromToken(token)
+
+	_, err = tokenClient.Kubernetes.Delete(context.Background(), spec.Name)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func ClusterState(c kubernetes.Interface, spec v1alpha1.KlusterSpec, id string) (string, error) {
 	token, err := getToken(c, spec.TokenSecret)
 	if err != nil {

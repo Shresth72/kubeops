@@ -22,6 +22,7 @@ import (
 	kinformer "github.com/shresth72/kluster/pkg/client/informers/externalversions/shresth72.dev/v1alpha1"
 	klister "github.com/shresth72/kluster/pkg/client/listers/shresth72.dev/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	typedcorev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
@@ -124,6 +125,23 @@ func (c *Controller) processNextItem() bool {
 
 	log.Printf("current kluster spec: %+v\n", kluster.Spec)
 
+	// Delete the cluster from DO if also deleted from local cluster
+	_, err = c.klient.Shresth72V1alpha1().
+		Klusters(ns).
+		Get(context.Background(), name, metav1.GetOptions{})
+	if apierrors.IsNotFound(err) {
+		log.Printf("Deployment '%s' was deleted\n", name)
+
+		err := do.Delete(c.client, kluster.Spec)
+		if err != nil {
+			log.Printf("failed to delete '%s' kluster\n", name)
+			return false
+		}
+
+		log.Printf("Kluster '%s' on Digital Ocean successfully deleted", name)
+		return true
+	}
+
 	// Create and manage the kluster of Digital Ocean
 	// Persisting ClusterID for easy deletion
 	clusterId, err := do.Create(c.client, kluster.Spec)
@@ -192,7 +210,7 @@ func (c *Controller) waitForCluster(spec v1alpha1.KlusterSpec, clusterId string)
 }
 
 func (c *Controller) updateStatus(id, progress string, kluster *v1alpha1.Kluster) error {
-	// To fetch the latest changes
+	// Fetch the latest changes
 	k, err := c.klient.Shresth72V1alpha1().
 		Klusters(kluster.Namespace).
 		Get(context.Background(), kluster.Name, metav1.GetOptions{})
@@ -200,8 +218,8 @@ func (c *Controller) updateStatus(id, progress string, kluster *v1alpha1.Kluster
 		return err
 	}
 
-	kluster.Status.KlusterId = id
-	kluster.Status.Progress = progress
+	k.Status.KlusterId = id
+	k.Status.Progress = progress
 
 	_, err = c.klient.Shresth72V1alpha1().
 		Klusters(kluster.Namespace).

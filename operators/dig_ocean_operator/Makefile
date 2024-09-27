@@ -1,3 +1,7 @@
+# Default kubectl command
+KUBECTL := sudo k3s kubectl
+
+# Variables
 MODULE_NAME := kluster
 GROUP_NAME := shresth72
 API_VERSION := v1alpha1
@@ -7,9 +11,16 @@ DO_TOKEN := ""
 
 # Paths
 CODEGEN_PKG := /home/shrestha/go/pkg/mod/k8s.io/code-generator@v0.29.2/kube_codegen.sh
-# HEADER_FILE := /home/shrestha/go_lang/kubectl/operators/digital_ocean_operator/hack/boilerplate.go.txt
+
 HEADER_FILE := ~/go/pkg/mod/k8s.io/code-generator@v0.29.2/hack/boilerplate.go.txt
+
 CRD_MANIFEST := manifests/${GROUP_NAME}.dev_${MODULE_NAME}s.yaml
+
+MANIFEST_DEPLOY_PATH := manifests/deploy
+
+
+
+
 
 # Generator
 generate-all: generate-code generate-crd
@@ -30,36 +41,81 @@ generate-crd:
 
 # CRD 
 create-crd:
-	sudo k3s kubectl create -f ${CRD_MANIFEST}
+	${KUBECTL} create -f ${CRD_MANIFEST}
 
 delete-crd:
-	sudo k3s kubectl delete -f ${CRD_MANIFEST}
+	${KUBECTL} delete -f ${CRD_MANIFEST}
 
 list-crds:
-	sudo k3s kubectl get crds
+	${KUBECTL} get crds
 
 
 
 
 # Secrets
 create-secret:
-	sudo k3s kubectl create secret ${SECRET_NAME} --from-literal token=${DO_TOKEN}
+	${KUBECTL} create secret ${SECRET_NAME} --from-literal token=${DO_TOKEN}
 
 list-secret:
-	sudo k3s kubectl get secrets ${SECRET_NAME} -oyaml
+	${KUBECTL} get secrets ${SECRET_NAME} -oyaml
 
 
 
 
 # Kluster
 create-kluster:
-	sudo k3s kubectl create -f manifests/klusterone.yaml
+	${KUBECTL} create -f manifests/klusterone.yaml
 
 delete-kluster:
-	sudo k3s kubectl delete -f manifests/klusterone.yaml
+	${KUBECTL} delete -f manifests/klusterone.yaml
 
 list-klusters:
-	sudo k3s kubectl get kluster
+	${KUBECTL} get kluster
+
+
+
+
+# Docker
+docker-build:
+	docker build -t shresth72/kluster:0.1.0 .
+
+docker-push:
+	docker push shresth72/kluster:0.1.0
+
+docker-run:
+	docker run --rm -it shresth72/kluster:0.1.0 
+
+
+
+
+# Deployments
+create-all-deploy:
+	${KUBECTL} create -f manifests/deploy
+
+create-deploy-yaml:
+	${KUBECTL} create deployment kluster --image shresth72/kluster:0.1.0 --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/deploy.yaml
+
+create-deploy:
+	${KUBECTL} create -f ${MANIFEST_DEPLOY_PATH}/deploy.yaml
+
+
+
+
+# RBAC
+create-service-account:
+	${KUBECTL} create serviceaccount kluster-sa --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/sa.yaml
+
+create-clusterrole:
+	${KUBECTL} create clusterrole kluster-cr --resource Kluster --verb list,watch --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/cr.yaml
+
+create-clusterrole-binding:
+	${KUBECTL} create clusterrolebinding kluster-crb --clusterrole kluster-cr --serviceaccount default:kluster-sa --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/crb.yaml
+
+create-role:
+	${KUBECTL} create role k-role --resource secret --verb get --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/krole.yaml
+
+create-role-binding:
+	${KUBECTL} create rolebinding k-rb --serviceaccount default:kluster-sa --role k-role --dry-run=client -oyaml > ${MANIFEST_DEPLOY_PATH}/kroleb.yaml
 
 
 

@@ -1,0 +1,31 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: kluster-cr
+rules:
+  - apiGroups:
+      - shresth72.dev
+    resources:
+      - klusters
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+  - apiGroups:
+      - shresth72.dev
+    resources:
+      - kluster/status
+    verbs:
+      - update
+  - apiGroups:
+      - shresth72.dev
+    resources:
+      - klusters
+    verbs:
+      - get
